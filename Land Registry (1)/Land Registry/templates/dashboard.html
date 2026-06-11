@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">Management Dashboard</h1>
+        <p style="color: var(--text-muted);">
+            Logged in as <strong style="color:var(--primary);">{{ full_name }}</strong> 
+            (<span style="text-transform: capitalize; font-weight: 600;">{{ role }} Portal Control</span>)
+        </p>
+    </div>
+    {% if role == 'admin' %}
+        <a href="{{ url_for('add_record') }}" class="btn btn-accent">
+            <i data-lucide="plus-circle"></i> Add New Record
+        </a>
+    {% endif %}
+</div>
+
+<!-- Dashboard Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="database"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_records }}</span>
+            <span class="stat-label">System Deeds</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon accent">
+            <i data-lucide="expand"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_area }} Ha</span>
+            <span class="stat-label">Mapped Area</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon primary" style="background: rgba(2, 132, 199, 0.1); color: var(--secondary);">
+            <i data-lucide="indian-rupee"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">₹{{ stats.total_value }} Cr</span>
+            <span class="stat-label">Est. Valuation</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i data-lucide="check-circle-2"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.verified_count }}</span>
+            <span class="stat-label">Verified Deeds</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i data-lucide="help-circle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.pending_count }}</span>
+            <span class="stat-label">Pending</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i data-lucide="minus-circle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.disputed_count }}</span>
+            <span class="stat-label">Disputed</span>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Left Column: Registry Table -->
+    <div class="glass-card" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1.25rem; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="list" style="color: var(--secondary)"></i> Land Record Registry
+        </h3>
+        
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Owner Name</th>
+                        <th>Khasra No.</th>
+                        <th>Khata No.</th>
+                        <th>Village</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for row in records %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--primary);">{{ row.owner_name }}</td>
+                                <td>{{ row.khasra_number }}</td>
+                                <td>{{ row.khata_number }}</td>
+                                <td>{{ row.village }}, {{ row.district }}</td>
+                                <td>
+                                    <span class="badge {% if row.registry_status == 'Verified' %}verified{% elif row.registry_status == 'Pending' %}pending{% elif row.registry_status == 'Disputed' %}disputed{% else %}transferred{% endif %}">
+                                        {{ row.registry_status }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div class="actions-cell" style="justify-content: flex-end;">
+                                        <button class="btn btn-secondary btn-sm" onclick="showRecordDetails({{ row.id }})" title="View Details">
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                        {% if role == 'admin' %}
+                                            <a href="{{ url_for('edit_record', record_id=row.id) }}" class="btn btn-primary btn-sm" title="Edit Record" style="padding: 0.4rem 0.6rem;">
+                                                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                            </a>
+                                            <form action="{{ url_for('delete_record', record_id=row.id) }}" method="POST" onsubmit="return confirmDelete('{{ row.owner_name }}')" style="display:inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete Record" style="padding: 0.4rem 0.6rem;">
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem;">No land records found. Create one.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right Column: Graphs -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Chart 1 -->
+        <div class="glass-card" style="padding: 1.5rem;">
+            <h3 style="margin-bottom: 1.25rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <i data-lucide="pie-chart" style="color: var(--accent);"></i> Land Types Distribution
+            </h3>
+            <div style="position: relative; height: 220px; width: 100%;">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2 -->
+        <div class="glass-card" style="padding: 1.5rem;">
+            <h3 style="margin-bottom: 1.25rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <i data-lucide="bar-chart-3" style="color: var(--secondary);"></i> District Valuation (₹ Cr)
+            </h3>
+            <div style="position: relative; height: 220px; width: 100%;">
+                <canvas id="districtChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal View Details -->
+<div id="details-modal" class="modal-overlay" onclick="closeDetailsModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="file-text" style="color: var(--secondary);"></i> Land Record Details
+            </h3>
+            <button class="modal-close" onclick="hideDetailsModal()">&times;</button>
+        </div>
+        <div class="details-grid">
+            <div class="details-item">
+                <span class="details-label">Land Owner</span>
+                <span id="detail-owner" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Registry Status</span>
+                <span id="detail-status" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Khasra Number</span>
+                <span id="detail-khasra" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Khata Number</span>
+                <span id="detail-khata" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Area (Hectares)</span>
+                <span id="detail-area" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Market Value</span>
+                <span id="detail-value" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Village</span>
+                <span id="detail-village" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">District</span>
+                <span id="detail-district" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Land Use Type</span>
+                <span id="detail-type" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Registration Date</span>
+                <span id="detail-date" class="details-value">-</span>
+            </div>
+            <div class="details-item" style="grid-column: span 2;">
+                <span class="details-label">Remarks & Audits</span>
+                <div id="detail-remarks" class="details-value remarks">-</div>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+            <button class="btn btn-secondary btn-sm" onclick="hideDetailsModal()">Close Window</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+    // Fetch and initialize Charts inside main dashboard
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeDashboardCharts();
+    });
+</script>
+{% endblock %}

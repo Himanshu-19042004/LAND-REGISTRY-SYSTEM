@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card">
+        <h2 class="form-title">Create Account</h2>
+        <p class="form-subtitle">Register a new citizen account or administrative officer profile for the portal.</p>
+        
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="form-group">
+                <label for="full_name" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="info" style="width: 16px; height: 16px; color: var(--secondary);"></i> Full Name
+                </label>
+                <input type="text" id="full_name" name="full_name" class="form-input" placeholder="e.g. Ramesh Verma" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="mail" style="width: 16px; height: 16px; color: var(--secondary);"></i> Email Address
+                </label>
+                <input type="email" id="email" name="email" class="form-input" placeholder="e.g. ramesh@citizenmail.in" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="username" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="user" style="width: 16px; height: 16px; color: var(--secondary);"></i> Username
+                </label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="Choose username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="role" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="shield" style="width: 16px; height: 16px; color: var(--secondary);"></i> Account Role
+                </label>
+                <select id="role" name="role" class="form-input" required>
+                    <option value="user">Citizen Profile (Read-Only Search & View)</option>
+                    <option value="admin">Land Officer Profile (Full Write/CRUD Permissions)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="key-round" style="width: 16px; height: 16px; color: var(--secondary);"></i> Account Password
+                </label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="Create password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-accent" style="width: 100%; margin-top: 1rem;">
+                <i data-lucide="user-plus"></i> Submit Registration
+            </button>
+        </form>
+        
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+            Already have an account? 
+            <a href="{{ url_for('login') }}" style="color: var(--secondary); font-weight: 600; text-decoration: none;">Login here</a>.
+        </div>
+    </div>
+</div>
+{% endblock %}

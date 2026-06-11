@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}National Land Registry Portal{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+    <!-- Main Custom CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Custom header scripts/css block if any -->
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand">
+                <div class="brand-emblem">LR</div>
+                <div class="brand-text">
+                    <span class="title">LAND REGISTRY</span>
+                    <span class="subtitle">Government Portal</span>
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <a href="{{ url_for('index') }}">Home</a>
+                </li>
+                <li class="nav-item {% if request.path == '/search' %}active{% endif %}">
+                    <a href="{{ url_for('search') }}">Search Records</a>
+                </li>
+                {% if logged_in %}
+                    <li class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+                        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    {% if role == 'admin' %}
+                        <li class="nav-item {% if request.path == '/admin/add' %}active{% endif %}">
+                            <a href="{{ url_for('add_record') }}">Add Record</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('logout') }}" class="nav-btn btn btn-sm">Logout ({{ username }})</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item {% if request.path == '/login' %}active{% endif %}">
+                        <a href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item {% if request.path == '/register' %}active{% endif %}">
+                        <a href="{{ url_for('register') }}" class="nav-btn btn btn-sm">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
+
+    <!-- Session Alert/Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <span>{{ message }}</span>
+                        <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Container -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-about">
+                <h3>Department of Land Records</h3>
+                <p>Ensuring transparency, safety, and efficiency in land registration and ownership authentication. Access real-time public land logs, register mutations, and secure property rights online.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home Portal</a></li>
+                    <li><a href="{{ url_for('search') }}">Search Land Records</a></li>
+                    <li><a href="{{ url_for('login') }}">Admin Login</a></li>
+                    <li><a href="{{ url_for('register') }}">Citizen Registration</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Support</h4>
+                <p><i data-lucide="map-pin"></i> Secretariat, New Delhi, India</p>
+                <p><i data-lucide="phone"></i> Helpdesk: +91 11 2345 6789</p>
+                <p><i data-lucide="mail"></i> support.landregistry@nic.in</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 National Land Registry Management. Designed & Maintained by National Informatics Center (NIC). All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+    <!-- Custom scripts block -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

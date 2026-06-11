@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Edit Record{% else %}Add Record{% endif %} - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 720px; margin-top: 1rem;">
+    <div class="glass-card">
+        <h2 class="form-title" style="text-align: left; margin-bottom: 0.5rem;">
+            {% if is_edit %}Modify Land Deed #{{ record_id }}{% else %}Register Land Deed{% endif %}
+        </h2>
+        <p class="form-subtitle" style="text-align: left; margin-bottom: 2rem;">
+            {% if is_edit %}Modify details for the existing land record. Fields marked * are mandatory.{% else %}Create a new entry into the public land database. Fields marked * are mandatory.{% endif %}
+        </p>
+
+        <form action="{% if is_edit %}{{ url_for('edit_record', record_id=record_id) }}{% else %}{{ url_for('add_record') }}{% endif %}" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Owner name -->
+                <div class="form-group">
+                    <label for="owner_name">Owner Name *</label>
+                    <input type="text" id="owner_name" name="owner_name" class="form-input" 
+                           value="{% if record %}{{ record.owner_name }}{% endif %}" placeholder="Enter full legal name of owner" required>
+                </div>
+
+                <!-- Father/Husband Name -->
+                <div class="form-group">
+                    <label for="father_husband_name">Father/Husband Name *</label>
+                    <input type="text" id="father_husband_name" name="father_husband_name" class="form-input" 
+                           value="{% if record %}{{ record.father_husband_name }}{% endif %}" placeholder="e.g. Dhirubhai Ambani" required>
+                </div>
+
+                <!-- Aadhaar ID -->
+                <div class="form-group">
+                    <label for="aadhaar_id">Aadhaar ID (Masked) *</label>
+                    <input type="text" id="aadhaar_id" name="aadhaar_id" class="form-input" 
+                           value="{% if record %}{{ record.aadhaar_id }}{% endif %}" placeholder="e.g. XXXX-XXXX-1234" required>
+                </div>
+
+                <!-- Mobile Number -->
+                <div class="form-group">
+                    <label for="mobile_number">Mobile Number *</label>
+                    <input type="text" id="mobile_number" name="mobile_number" class="form-input" 
+                           value="{% if record %}{{ record.mobile_number }}{% endif %}" placeholder="e.g. +91 9876543210" required>
+                </div>
+
+                <!-- Khasra -->
+                <div class="form-group">
+                    <label for="khasra_number">Khasra Number *</label>
+                    <input type="text" id="khasra_number" name="khasra_number" class="form-input" 
+                           value="{% if record %}{{ record.khasra_number }}{% endif %}" placeholder="e.g. 102/4" required>
+                </div>
+
+                <!-- Khata -->
+                <div class="form-group">
+                    <label for="khata_number">Khata Number *</label>
+                    <input type="text" id="khata_number" name="khata_number" class="form-input" 
+                           value="{% if record %}{{ record.khata_number }}{% endif %}" placeholder="e.g. KH-882" required>
+                </div>
+
+                <!-- Survey Number -->
+                <div class="form-group">
+                    <label for="survey_number">Survey Number *</label>
+                    <input type="text" id="survey_number" name="survey_number" class="form-input" 
+                           value="{% if record %}{{ record.survey_number }}{% endif %}" placeholder="e.g. SUR-888" required>
+                </div>
+
+                <!-- Area -->
+                <div class="form-group">
+                    <label for="area">Land Area (in Hectares) *</label>
+                    <input type="number" id="area" name="area" step="0.001" class="form-input" 
+                           value="{% if record %}{{ record.area }}{% endif %}" placeholder="e.g. 2.45" required>
+                </div>
+
+                <!-- Market Value -->
+                <div class="form-group">
+                    <label for="market_value">Est. Market Value (in INR) *</label>
+                    <input type="number" id="market_value" name="market_value" step="1" class="form-input" 
+                           value="{% if record %}{{ record.market_value }}{% endif %}" placeholder="e.g. 4500000" required>
+                </div>
+
+                <!-- Village -->
+                <div class="form-group">
+                    <label for="village">Village / Town *</label>
+                    <input type="text" id="village" name="village" class="form-input" 
+                           value="{% if record %}{{ record.village }}{% endif %}" placeholder="e.g. Rampur" required>
+                </div>
+
+                <!-- Tehsil -->
+                <div class="form-group">
+                    <label for="tehsil">Tehsil *</label>
+                    <input type="text" id="tehsil" name="tehsil" class="form-input" 
+                           value="{% if record %}{{ record.tehsil }}{% endif %}" placeholder="e.g. Sanganer" required>
+                </div>
+
+                <!-- District -->
+                <div class="form-group">
+                    <label for="district">District *</label>
+                    <input type="text" id="district" name="district" class="form-input" 
+                           value="{% if record %}{{ record.district }}{% endif %}" placeholder="e.g. Jaipur" required>
+                </div>
+
+                <!-- State -->
+                <div class="form-group">
+                    <label for="state">State *</label>
+                    <input type="text" id="state" name="state" class="form-input" 
+                           value="{% if record %}{{ record.state }}{% endif %}" placeholder="e.g. Rajasthan" required>
+                </div>
+
+                <!-- Pin Code -->
+                <div class="form-group">
+                    <label for="pin_code">Pin Code *</label>
+                    <input type="text" id="pin_code" name="pin_code" class="form-input" 
+                           value="{% if record %}{{ record.pin_code }}{% endif %}" placeholder="e.g. 302029" required>
+                </div>
+
+                <!-- Land type -->
+                <div class="form-group">
+                    <label for="land_type">Land Use Type *</label>
+                    <select id="land_type" name="land_type" class="form-input" required>
+                        <option value="Agricultural" {% if record and record.land_type == 'Agricultural' %}selected{% endif %}>Agricultural</option>
+                        <option value="Residential" {% if record and record.land_type == 'Residential' %}selected{% endif %}>Residential</option>
+                        <option value="Commercial" {% if record and record.land_type == 'Commercial' %}selected{% endif %}>Commercial</option>
+                        <option value="Industrial" {% if record and record.land_type == 'Industrial' %}selected{% endif %}>Industrial</option>
+                    </select>
+                </div>
+
+                <!-- Registry status -->
+                <div class="form-group">
+                    <label for="registry_status">Registry Status *</label>
+                    <select id="registry_status" name="registry_status" class="form-input" required>
+                        <option value="Pending" {% if record and record.registry_status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Verified" {% if record and record.registry_status == 'Verified' %}selected{% endif %}>Verified</option>
+                        <option value="Disputed" {% if record and record.registry_status == 'Disputed' %}selected{% endif %}>Disputed</option>
+                        <option value="Transferred" {% if record and record.registry_status == 'Transferred' %}selected{% endif %}>Transferred</option>
+                    </select>
+                </div>
+
+                <!-- Registration Date -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="registration_date">Registration Date *</label>
+                    <input type="date" id="registration_date" name="registration_date" class="form-input" 
+                           value="{% if record %}{{ record.registration_date }}{% endif %}" required>
+                </div>
+
+                <!-- Remarks -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="remarks">Remarks & Audits</label>
+                    <textarea id="remarks" name="remarks" class="form-input" rows="3" 
+                              placeholder="Describe dispute boundaries, history, or inheritance mutations...">{% if record %}{{ record.remarks }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Submit triggers -->
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.25rem;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                    Cancel & Return
+                </a>
+                <button type="submit" class="btn btn-accent">
+                    <i data-lucide="check"></i> {% if is_edit %}Save Changes{% else %}Register Deed{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

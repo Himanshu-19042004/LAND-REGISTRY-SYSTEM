@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <h1>National Land Registry Management System</h1>
+    <p>Verify ownership records, examine land coordinates (Khasra & Khata numbers), track mutation filings, and browse verified digital title deeds in a secure, transparent public ledger.</p>
+    
+    <!-- Hero Search -->
+    <div class="hero-search-container">
+        <form action="{{ url_for('search') }}" method="GET" class="hero-search-form">
+            <input type="text" name="location" placeholder="Search by Village, District, or Town name..." required>
+            <button type="submit">
+                <i data-lucide="search"></i> Search Land Records
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Bento Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="file-text"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_records }}</span>
+            <span class="stat-label">Total Records</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon accent">
+            <i data-lucide="map"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_area }} Ha</span>
+            <span class="stat-label">Total Area</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i data-lucide="badge-check"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.verified_count }}</span>
+            <span class="stat-label">Verified Deeds</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i data-lucide="clock"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.pending_count }}</span>
+            <span class="stat-label">Pending Reviews</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <i data-lucide="alert-triangle"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.disputed_count }}</span>
+            <span class="stat-label">Disputed Titles</span>
+        </div>
+    </div>
+</div>
+
+<!-- Features bento section -->
+<h2 style="margin-bottom: 1.5rem; border-left: 4px solid var(--accent); padding-left: 0.75rem;">Digital Portal Services</h2>
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 3rem;">
+    <div class="glass-card">
+        <h3 style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+            <i data-lucide="search" style="color: var(--secondary);"></i> Advanced Search
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+            Query ownership records by searching for Owner name, specific Khasra or Khata numbers, or location filters.
+        </p>
+        <a href="{{ url_for('search') }}" class="btn btn-primary btn-sm">Explore Search &rarr;</a>
+    </div>
+    <div class="glass-card">
+        <h3 style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+            <i data-lucide="shield-check" style="color: var(--accent);"></i> Secure Dashboard
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+            Registered citizens and administrators can review summary statistics, check pending actions, and view charts.
+        </p>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-accent btn-sm">Go to Dashboard &rarr;</a>
+    </div>
+    <div class="glass-card">
+        <h3 style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+            <i data-lucide="lock" style="color: var(--status-verified);"></i> Officer Controls
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+            Admin credentials allow adding, editing, or deleting deeds directly from the portal command deck.
+        </p>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm">Admin Portal &rarr;</a>
+    </div>
+</div>
+
+<!-- Recent Registry Activity -->
+<div class="glass-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;">
+            <i data-lucide="clock" style="color: var(--accent)"></i> Recent Registrations
+        </h3>
+        <a href="{{ url_for('search') }}" style="color: var(--secondary); font-size:0.9rem; text-decoration:none; font-weight:600;">View All &rarr;</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Owner Name</th>
+                    <th>Khasra No.</th>
+                    <th>Khata No.</th>
+                    <th>Area (Ha)</th>
+                    <th>Village</th>
+                    <th>District</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_records %}
+                    {% for row in recent_records %}
+                        <tr>
+                            <td style="font-weight: 600; color: var(--primary);">{{ row.owner_name }}</td>
+                            <td>{{ row.khasra_number }}</td>
+                            <td>{{ row.khata_number }}</td>
+                            <td>{{ row.area }}</td>
+                            <td>{{ row.village }}</td>
+                            <td>{{ row.district }}</td>
+                            <td>
+                                <span class="badge {% if row.registry_status == 'Verified' %}verified{% elif row.registry_status == 'Pending' %}pending{% elif row.registry_status == 'Disputed' %}disputed{% else %}transferred{% endif %}">
+                                    {{ row.registry_status }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recent records found in database.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

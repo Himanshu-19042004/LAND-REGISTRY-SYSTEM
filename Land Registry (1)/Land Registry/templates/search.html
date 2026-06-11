@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Land Records - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">Land Record Search System</h1>
+    <p style="color: var(--text-muted);">Enter search criteria below to lookup verified land title deeds and ownership certificates.</p>
+</div>
+
+<div class="search-container">
+    <!-- Left Filter Panel -->
+    <div class="filter-panel">
+        <h3 style="margin-bottom: 1.25rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+            <i data-lucide="sliders-horizontal" style="color: var(--accent);"></i> Search Filters
+        </h3>
+        <form action="{{ url_for('search') }}" method="GET">
+            <div class="filter-group">
+                <label for="owner">Owner Name</label>
+                <input type="text" id="owner" name="owner" value="{{ filters.owner }}" placeholder="e.g. Rajesh Sharma">
+            </div>
+            
+            <div class="filter-group">
+                <label for="khasra">Khasra Number</label>
+                <input type="text" id="khasra" name="khasra" value="{{ filters.khasra }}" placeholder="e.g. 102/4">
+            </div>
+            
+            <div class="filter-group">
+                <label for="khata">Khata Number</label>
+                <input type="text" id="khata" name="khata" value="{{ filters.khata }}" placeholder="e.g. KH-882">
+            </div>
+            
+            <div class="filter-group">
+                <label for="location">Village / District</label>
+                <input type="text" id="location" name="location" value="{{ filters.location }}" placeholder="e.g. Jaipur">
+            </div>
+            
+            <div class="filter-group">
+                <label for="status">Registry Status</label>
+                <select id="status" name="status">
+                    <option value="">-- All Statuses --</option>
+                    <option value="Verified" {% if filters.status == 'Verified' %}selected{% endif %}>Verified</option>
+                    <option value="Pending" {% if filters.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Disputed" {% if filters.status == 'Disputed' %}selected{% endif %}>Disputed</option>
+                    <option value="Transferred" {% if filters.status == 'Transferred' %}selected{% endif %}>Transferred</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
+                <i data-lucide="search"></i> Apply Search
+            </button>
+            <a href="{{ url_for('search') }}" class="btn btn-secondary" style="width: 100%; text-decoration: none;">
+                <i data-lucide="refresh-cw"></i> Reset Form
+            </a>
+        </form>
+    </div>
+
+    <!-- Right Results Panel -->
+    <div class="glass-card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <h3 style="font-size: 1.25rem;">Registry Search Results ({{ records|length }})</h3>
+            {% if filters.owner or filters.khasra or filters.khata or filters.location or filters.status %}
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Active Filters:</span>
+                    {% if filters.owner %}<span class="badge" style="background:#e2e8f0; color:var(--text-main);">Owner: {{ filters.owner }}</span>{% endif %}
+                    {% if filters.khasra %}<span class="badge" style="background:#e2e8f0; color:var(--text-main);">Khasra: {{ filters.khasra }}</span>{% endif %}
+                    {% if filters.khata %}<span class="badge" style="background:#e2e8f0; color:var(--text-main);">Khata: {{ filters.khata }}</span>{% endif %}
+                    {% if filters.location %}<span class="badge" style="background:#e2e8f0; color:var(--text-main);">Location: {{ filters.location }}</span>{% endif %}
+                    {% if filters.status %}<span class="badge" style="background:#e2e8f0; color:var(--text-main);">Status: {{ filters.status }}</span>{% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Owner Name</th>
+                        <th>Khasra No.</th>
+                        <th>Khata No.</th>
+                        <th>Area (Ha)</th>
+                        <th>Village</th>
+                        <th>District</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for row in records %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--primary);">{{ row.owner_name }}</td>
+                                <td>{{ row.khasra_number }}</td>
+                                <td>{{ row.khata_number }}</td>
+                                <td>{{ row.area }}</td>
+                                <td>{{ row.village }}</td>
+                                <td>{{ row.district }}</td>
+                                <td>
+                                    <span class="badge {% if row.registry_status == 'Verified' %}verified{% elif row.registry_status == 'Pending' %}pending{% elif row.registry_status == 'Disputed' %}disputed{% else %}transferred{% endif %}">
+                                        {{ row.registry_status }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                    <button class="btn btn-secondary btn-sm" onclick="showRecordDetails({{ row.id }})">
+                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Details
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="downloadRecord({{ row.id }})">
+                                        <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                <i data-lucide="search-code" style="width: 48px; height: 48px; stroke-width: 1; margin-bottom: 1rem; color: #94a3b8;"></i>
+                                <p>No matching land records found. Adjust your search filters and try again.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal View Details -->
+<div id="details-modal" class="modal-overlay" onclick="closeDetailsModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="file-text" style="color: var(--secondary);"></i> Land Record Details
+            </h3>
+            <button class="modal-close" onclick="hideDetailsModal()">&times;</button>
+        </div>
+        <div class="details-grid">
+            <div class="details-item">
+                <span class="details-label">Land Owner</span>
+                <span id="detail-owner" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Father/Husband Name</span>
+                <span id="detail-father" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Aadhaar ID</span>
+                <span id="detail-aadhaar" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Mobile Number</span>
+                <span id="detail-mobile" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Registry Status</span>
+                <span id="detail-status" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Khasra Number</span>
+                <span id="detail-khasra" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Khata Number</span>
+                <span id="detail-khata" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Survey Number</span>
+                <span id="detail-survey" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Area (Hectares)</span>
+                <span id="detail-area" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Market Value (INR)</span>
+                <span id="detail-value" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Village</span>
+                <span id="detail-village" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Tehsil</span>
+                <span id="detail-tehsil" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">District</span>
+                <span id="detail-district" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">State</span>
+                <span id="detail-state" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Pin Code</span>
+                <span id="detail-pincode" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Land Use Type</span>
+                <span id="detail-type" class="details-value">-</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Registration Date</span>
+                <span id="detail-date" class="details-value">-</span>
+            </div>
+            <div class="details-item" style="grid-column: span 2;">
+                <span class="details-label">Remarks & Audits</span>
+                <div id="detail-remarks" class="details-value remarks">-</div>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+            <button class="btn btn-primary btn-sm" id="modal-download-btn" onclick="downloadRecord(0)">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download PDF
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="hideDetailsModal()">Close Window</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

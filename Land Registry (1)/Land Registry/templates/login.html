@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - National Land Registry Portal{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card">
+        <h2 class="form-title">Portal Access</h2>
+        <p class="form-subtitle">Enter your administrative or citizen credentials to open your land registry control desk.</p>
+        
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="username" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="user" style="width: 16px; height: 16px; color: var(--secondary);"></i> Username
+                </label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="e.g. admin" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" style="display:flex; align-items:center; gap:0.5rem;">
+                    <i data-lucide="key-round" style="width: 16px; height: 16px; color: var(--secondary);"></i> Password
+                </label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i data-lucide="log-in"></i> Sign In to Portal
+            </button>
+        </form>
+        
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+            Don't have an account? 
+            <a href="{{ url_for('register') }}" style="color: var(--secondary); font-weight: 600; text-decoration: none;">Register here</a>.
+        </div>
+        
+        <!-- Quick login helpers for testing -->
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Testing Accounts:</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+                <span>Admin Login:</span>
+                <code>admin / admin123</code>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+                <span>User Login:</span>
+                <code>user / user123</code>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
